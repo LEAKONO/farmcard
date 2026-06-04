@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 
 const API_KEY = import.meta.env.VITE_WEATHER_API_KEY || "";
-const BASE    = "https://api.weather-ai.co/v1";
+const BASE    = import.meta.env.DEV
+  ? "https://api.weather-ai.co/v1"
+  : "/api";
 
 const headers = () => ({ Authorization: `Bearer ${API_KEY}` });
 
