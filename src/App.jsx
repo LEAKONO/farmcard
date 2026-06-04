@@ -33,6 +33,20 @@ const geocodeCity = async (city) => {
   return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon), name: data[0].display_name.split(",")[0] };
 };
 
+// reverse geocode coords → city name using OpenStreetMap
+const reverseGeocode = async (lat, lon) => {
+  const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
+  const res = await fetch(url, { headers: { "Accept-Language": "en" } });
+  const data = await res.json();
+  return (
+    data.address?.city     ??
+    data.address?.town     ??
+    data.address?.village  ??
+    data.address?.county   ??
+    "Your location"
+  );
+};
+
 // ─── Components ───────────────────────────────────────────────────────────
 function Spinner() {
   return (
@@ -193,23 +207,26 @@ export default function App() {
     }
   }, []);
 
-  // Auto-detect location on mount
+  // Use browser GPS — works correctly on both local and Vercel
   useEffect(() => {
-    (async () => {
-      try {
-        const res  = await fetch(`${BASE}/weather-geo?ip=auto&days=7&units=metric&ai=true`, { headers: headers() });
-        if (!res.ok) throw new Error(`API error ${res.status}`);
-        const data = await res.json();
-        const detectedCity = res.headers.get("X-City") ?? data.geo?.city ?? "Your location";
-        setWeather(data);
-        setCity(detectedCity);
-      } catch {
-        // Fallback to Nairobi
-        await fetchWeather(-1.2921, 36.8219, "Nairobi");
-      } finally {
-        setLoading(false);
-      }
-    })();
+    if (!navigator.geolocation) {
+      // Browser doesn't support GPS — fall back to Nairobi
+      fetchWeather(-1.2921, 36.8219, "Nairobi");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude: lat, longitude: lon } = pos.coords;
+        const name = await reverseGeocode(lat, lon);
+        fetchWeather(lat, lon, name);
+      },
+      () => {
+        // User denied location permission — fall back to Nairobi
+        fetchWeather(-1.2921, 36.8219, "Nairobi");
+      },
+      { timeout: 8000 }
+    );
   }, [fetchWeather]);
 
   const handleSearch = async (query) => {
