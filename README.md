@@ -74,7 +74,8 @@ Make sure you have these installed:
 
 **1. Clone the repository**
 ```bash
-git clone https://github.com/LEAKONO/farmcast.git
+git clone https://github.com/LEAKONO/farmcard.git
+
 cd farmcast
 ```
 
@@ -102,18 +103,7 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173) in your browser.
 
----
 
-## Getting a WeatherAI API Key
-
-1. Go to [weather-ai.co](https://weather-ai.co) and create a free account
-2. Navigate to **Dashboard → API Keys**
-3. Click **Create Key** — your key will start with `wai_`
-4. Copy it and paste it into your `.env` file
-
-> The free plan gives you **1,000 requests/month** and **200 AI summaries/month** — more than enough for development and demos.
-
----
 
 ## Deployment (Vercel)
 
@@ -122,38 +112,6 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 npm install -g vercel
 vercel
 ```
-
-**Option B — GitHub integration**
-1. Push your code to GitHub
-2. Go to [vercel.com](https://vercel.com) and import your repository
-3. In **Settings → Environment Variables**, add:
-   - Key: `VITE_WEATHER_API_KEY`
-   - Value: your `wai_...` key
-4. Click **Deploy**
-
-> Do NOT commit your `.env` file. It is already in `.gitignore`.
-
----
-
-## Available Scripts
-
-| Command | Description |
-|---|---|
-| `npm run dev` | Start local development server at localhost:5173 |
-| `npm run build` | Build for production into the `dist/` folder |
-| `npm run preview` | Preview the production build locally |
-
----
-
-## How It Works
-
-1. **On load** — the app calls `/v1/weather-geo?ip=auto` which auto-detects your location from your IP address and returns weather data + the detected city name from response headers (`X-City`)
-2. **Fallback** — if geo-detection fails, it defaults to Nairobi, Kenya
-3. **City search** — when you search a city name, it geocodes it via OpenStreetMap Nominatim (no API key needed) to get lat/lon, then calls `/v1/weather` with those coordinates
-4. **AI summary** — the `ai=true` parameter on every request returns a Gemini-powered plain-English weather summary which is displayed in the AI Insight card
-5. **Flexible parsing** — the response parser checks multiple possible field names (`temp_c`, `temperature`, `temp`) so the app handles any minor changes in the API response shape gracefully
-
----
 
 ## Author
 
